@@ -4,6 +4,7 @@ import settings
 from multiprocessing import Queue
 from services.mqtt_client import MQTTClient
 from services.ChangeUnitsWorker import ChangeUnitsWorker
+from services.AlarmReport import AlarmReport
 
 input_event_queue = Queue()
 output_event_queue = Queue()
@@ -22,10 +23,15 @@ transform = ChangeUnitsWorker(
     output_queue=output_event_queue
 )
 
+alarm = AlarmReport(
+    input_queue=input_event_queue,
+    output_queue=output_event_queue
+)
 
 if __name__ == "__main__":
     logging_mode = logging.INFO
     logging.basicConfig(format='%(asctime)s.%(msecs)s:%(name)s:%(thread)d:%(levelname)s:%(process)d:%(message)s',
                         level=logging_mode)
     transform.start()
+    alarm.start()
     client.loop_forever()

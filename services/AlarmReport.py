@@ -6,7 +6,7 @@ from multiprocessing import Queue
 from entities.message import Message
 
 
-class ChangeUnitsWorker(BackgroundWorker):
+class AlarmReport(BackgroundWorker):
     def __init__(self,
                  input_queue: Queue = None,
                  output_queue: Queue = None,
@@ -18,7 +18,7 @@ class ChangeUnitsWorker(BackgroundWorker):
             input_payload = json.loads(message.payload)
             payload = defaultdict()
             if input_payload.get('temperature'):
-                payload['temperature'] = self.to_fahrenheit(input_payload['temperature'])
+                payload['temperature'] = self.alarmCheck(input_payload['temperature'])
             if len(payload.keys()):
                 self._output_queue.put(
                     Message(topic='Output', payload=json.dumps(payload).encode()))
@@ -27,6 +27,9 @@ class ChangeUnitsWorker(BackgroundWorker):
             logging.error(e)
 
     @staticmethod
-    def to_fahrenheit(celsius: float = 0) -> float:
-        return celsius * 1.8 + 32
+    def alarmCheck(celsius: float = 0) -> float:
+        if celsius > 30:
+            return "ALERTA: Temperatura muy elevada"
+        else:
+            return "Temperatura normal"
 
